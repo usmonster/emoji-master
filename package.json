@@ -17,17 +17,21 @@
     "reacji",
     "game"
   ],
-  "author": "usmonster",
+  "author": "usmonster ()",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/usmonster/emoji-master/issues"
   },
   "homepage": "https://github.com/usmonster/emoji-master#readme",
+  "engines": {
+    "npm": "6.x"
+  },
   "dependencies": {
     "@slack/client": "^4.2.2",
     "@slack/events-api": "^1.0.1",
     "express": "^4.16.3",
     "install": "^0.11.0",
+    "pug": "^2.0.3",
     "redis": "^2.8.0",
     "request": "^2.87.0"
   },

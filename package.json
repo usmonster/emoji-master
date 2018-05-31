@@ -24,6 +24,7 @@
   "homepage": "https://github.com/usmonster/emoji-master#readme",
   "dependencies": {
     "@slack/client": "^4.2.2",
+    "@slack/events-api": "^1.0.1",
     "install": "^0.11.0",
     "npm": "^6.1.0"
   }

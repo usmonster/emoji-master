@@ -19,7 +19,7 @@ function userEarnPoints(user, points) {
       if (parsedRes !== null) {
         score = parsedRes.score + points
       }
-      return (zaddAsync('leaderboard', user, score))
+      return (zaddAsync('leaderboard', score, user))
     }).then((res) => {
       console.log(`User points successfully set - ${res}`)
     }).catch((err) => {

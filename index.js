@@ -9,6 +9,7 @@ const options = {
    {
      token: process.env.SLACK_TOKEN,
      channel: 'C027VGR1H',
+     count: 10
    },
   headers:
    {
@@ -23,8 +24,9 @@ request(options, (error, response, body) => {
   }
 
   parsedBody = JSON.parse(body)
+  console.log(parsedBody)
 
-  if (parsedBody.ok == 'true') {
+  if (parsedBody.ok) {
       users = [] // simulate DB
       parsedBody.messages.forEach(message => {
         if (message.reactions) {
@@ -79,7 +81,7 @@ slackEvents.start(port).then(() => {
 const express = require('express')
 
 const app = express()
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
   res.send('Hello world!')
 })
 app.listen(8080)

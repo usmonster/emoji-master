@@ -21,5 +21,10 @@
   "bugs": {
     "url": "https://github.com/usmonster/emoji-master/issues"
   },
-  "homepage": "https://github.com/usmonster/emoji-master#readme"
+  "homepage": "https://github.com/usmonster/emoji-master#readme",
+  "dependencies": {
+    "@slack/client": "^4.2.2",
+    "install": "^0.11.0",
+    "npm": "^6.1.0"
+  }
 }

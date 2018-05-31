@@ -60,7 +60,7 @@ function getMessageHistory() {
     }
 
     const parsedBody = JSON.parse(body)
-    console.log(parsedBody)
+    // console.log(parsedBody)
 
     if (parsedBody.ok) {
       const users = [] // simulate DB
@@ -87,7 +87,7 @@ function getMessageHistory() {
         username: getUsername(userId),
         score,
       }))
-      console.log(leaderboard)
+      // console.log(leaderboard)
     }
   })
 }
@@ -125,21 +125,21 @@ const getPreviousHourMessages = async () => {
               bestReactionCount = reaction.count
               const user = reaction.users[0]
               // console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, bestReactionCount).then((res) => {
-                console.log(`User points added - ${res}`)
-              })
+              // userEarnPoints(user, bestReactionCount).then((res) => {
+              //   console.log(`User points added - ${res}`)
+              // })
             }
           })
         }
       })
 
-      displayDatabase()
+      // displayDatabase()
     }
   })
 }
 
-getMessageHistory()
-getPreviousHourMessages()
+// getMessageHistory()
+// getPreviousHourMessages()
 
 /* SLACK STUFF */
 // TODO: use listeners?

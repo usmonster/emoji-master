@@ -35,13 +35,13 @@ function getLeaderBoard(numberOfUsers) {
 }
 
 function displayDatabase() {
-  return zrevrangebyscoreAsync('+inf', -1).then((res) => {
+  return zrevrangebyscoreAsync('leaderboard', '+inf', -1).then((res) => {
     console.log(JSON.stringify(res))
   }).catch((err) => {
     console.error(err)
   })
 }
 
-getLeaderBoard(3)
-
+// getLeaderBoard(3)
+displayDatabase()
 module.exports = { userEarnPoints, displayDatabase }

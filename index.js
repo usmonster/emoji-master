@@ -125,9 +125,9 @@ const getPreviousHourMessages = async () => {
               bestReactionCount = reaction.count
               const user = reaction.users[0]
               // console.log(`${user} wins ${users[user]} points`)
-              // userEarnPoints(user, bestReactionCount).then((res) => {
-              //   console.log(`User points added - ${res}`)
-              // })
+              userEarnPoints(user, bestReactionCount).then((res) => {
+                console.log(`User points added - ${res}`)
+              })
             }
           })
         }

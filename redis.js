@@ -13,13 +13,12 @@ client.on('error', (err) => {
 
 function userEarnPoints(user, points) {
   return zscoreAsync('leaderboard', user)
-    .then((res) => {
-      const parsedRes = JSON.parse(res)
-      let score = 0
-      if (parsedRes !== null) {
-        score = parsedRes.score + points
+    .then((score) => {
+      let newScore = 0
+      if (score !== null) {
+        newScore = score + points
       }
-      return (zaddAsync('leaderboard', score, user))
+      return (zaddAsync('leaderboard', newScore, user))
     }).then((res) => {
       console.log(`User points successfully set - ${res}`)
     }).catch((err) => {
@@ -43,5 +42,5 @@ function displayDatabase() {
 }
 
 // getLeaderBoard(3)
-displayDatabase()
+// displayDatabase()
 module.exports = { userEarnPoints, displayDatabase }

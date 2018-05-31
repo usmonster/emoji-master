@@ -14,11 +14,11 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
     count: 100,
     oldest: from,
     latest: to,
-  }).then((res) => {
+  }).then((history) => {
     // console.log('>>> message history:')
-    // console.log(res)
+    // console.log(history)
     const userScoreMap = {} // simulate DB
-    res.messages
+    history.messages
       .filter(message => 'reactions' in message)
       .forEach((message) => {
         let bestReactionCount = 0
@@ -86,10 +86,10 @@ const express = require('express')
 const PORT = process.env.PORT || 8080
 express()
   .get('/', async (req, res) => {
-    await getMessageHistory()
-      .then(() => displayDatabase()) // DEBUG
+    const data = {}
+    data.history = await getMessageHistory()
     // await getPreviousHourMessages()
-    //   .then(() => displayDatabase()) // DEBUG
-    res.render('pages/index.pug')
+    displayDatabase() // DEBUG
+    res.render('pages/index.pug', data)
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

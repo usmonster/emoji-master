@@ -9,7 +9,6 @@ const options = {
    {
      token: process.env.SLACK_TOKEN,
      channel: 'C027VGR1H',
-     count: 10,
    },
   headers:
    {
@@ -23,9 +22,11 @@ request(options, (error, response, body) => {
     console.error(error)
   }
 
-  if (body.ok == 'true') {
+  parsedBody = JSON.parse(body)
+
+  if (parsedBody.ok == 'true') {
       users = [] // simulate DB
-      body.messages.forEach(message => {
+      parsedBody.messages.forEach(message => {
         if (message.reactions) {
             bestReactionCount = 0
             message.reactions.forEach(reaction => {

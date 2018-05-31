@@ -9,6 +9,7 @@ const options = {
    {
      token: process.env.SLACK_TOKEN,
      channel: 'C027VGR1H',
+     count: 10,
    },
   headers:
    {

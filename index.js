@@ -8,51 +8,53 @@ async function getUsername(id) {
   return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.display_name)
 }
 
-function getMessageHistory(from = 0, to = Date.now()) {
+async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
   return slackClient.channels.history({
     channel: 'C027VGR1H',
     count: 100,
     oldest: from,
     latest: to,
   }).then((res) => {
+    // console.log('>>> message history:')
     // console.log(res)
-    if (res.ok) {
-      const users = {} // simulate DB
-      res.messages.forEach((message) => {
-        if (message.reactions) {
-          let bestReactionCount = 0
-          message.reactions.forEach((reaction) => {
-            if (reaction.count >= bestReactionCount) {
-              bestReactionCount = reaction.count
-              const user = reaction.users[0]
-              // score = redis.get(user) || 0
-              const previousScore = users[user] || 0
-              // redis.set(user, score + bestReactionCount)
-              users[user] = previousScore + bestReactionCount
-              // console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, bestReactionCount).then((res) => {
-                console.log(`User points added - ${res}`)
-              })
-            }
-          })
-        }
+    const userScoreMap = {} // simulate DB
+    res.messages
+      .filter(message => 'reactions' in message)
+      .forEach((message) => {
+        let bestReactionCount = 0
+        // TODO: use reduce
+        message.reactions.forEach((reaction) => {
+          if (reaction.count >= bestReactionCount) {
+            bestReactionCount = reaction.count
+            const userId = reaction.users[0]
+            // score = redis.get(userId) || 0
+            const previousScore = userScoreMap[userId] || 0
+            // redis.set(userId, score + bestReactionCount)
+            userScoreMap[userId] = previousScore + bestReactionCount
+            // console.log(`${userId} wins ${users[userId]} points`)
+            userEarnPoints(userId, bestReactionCount)
+          }
+        })
       })
+    console.log(`userScoreMap: ${JSON.stringify(userScoreMap)}`)
 
-      // DEBUG: remove this later, since we have redis now
-      // Establish the (local, ephemeral) leaderboard
-      const leaderboard = Object.entries(users).map(async ([userId, score]) => ({
-        userId,
-        score,
-        username: await getUsername(userId),
-      }))
-      console.log(leaderboard)
-    }
+    // DEBUG: remove this later, since we have redis now
+    // Establish the (local, ephemeral) leaderboard
+    const fakeLeaderboard = Object.entries(userScoreMap).map(async ([userId, score]) => ({
+      userId,
+      score,
+      username: await getUsername(userId),
+    }))
+    Promise.all(fakeLeaderboard).then(console.log)
+    return fakeLeaderboard
   })
 }
 
 async function getPreviousHourMessages() {
-  return getMessageHistory((Date.now() / 1000) - 7200, (Date.now() / 1000) - 3600)
-    .then(() => displayDatabase())
+  // Note: times are in seconds
+  const oneHour = 60 * 60
+  const now = Date.now() / 1e3
+  return getMessageHistory(now - (oneHour * 2), now - oneHour)
 }
 
 /* SLACK STUFF */
@@ -84,8 +86,10 @@ const express = require('express')
 const PORT = process.env.PORT || 8080
 express()
   .get('/', async (req, res) => {
-    // await getMessageHistory()
-    await getPreviousHourMessages()
+    await getMessageHistory()
+      .then(() => displayDatabase()) // DEBUG
+    // await getPreviousHourMessages()
+    //   .then(() => displayDatabase()) // DEBUG
     res.render('pages/index.pug')
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

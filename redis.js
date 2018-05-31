@@ -25,18 +25,19 @@ function userEarnPoints(user, points) {
     }).catch(console.error)
 }
 
-function getLeaderBoard(numberOfUsers) {
-  return zrevrangeAsync('leaderboard', 0, numberOfUsers, 'WITHSCORES')
+function getLeaderBoard(limit) {
+  return zrevrangeAsync('leaderboard', 0, limit, 'WITHSCORES')
     .then((res) => {
       console.log('getleaderboardstart') // DEBUG
-      console.log(JSON.stringify(res)) // DEBUG
+      console.log(res) // DEBUG
       console.log('getleaderboardend') // DEBUG
+      return res
     })
 }
 
 function displayDatabase() {
   return zrevrangebyscoreAsync('leaderboard', '+inf', -1).then((res) => {
-    console.log(JSON.stringify(res))
+    console.log(res) // DEBUG
     return res
   }).catch(console.error)
 }

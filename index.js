@@ -58,7 +58,7 @@ request(options, (error, response, body) => {
   }
 })
 
-const getUsername = (id) => {
+const getUsername = async (id) => {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/users.profile.get',

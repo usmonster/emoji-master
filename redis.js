@@ -14,7 +14,7 @@ client.on('error', (err) => {
 function userEarnPoints(user, points) {
   return zscoreAsync('leaderboard', user)
     .then((score) => {
-      let newScore = 0
+      let newScore = points
       if (score !== null) {
         newScore = score + points
       }

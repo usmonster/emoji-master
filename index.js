@@ -3,33 +3,10 @@ const request = require('request')
 const { WebClient } = require('@slack/client')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
-const slackClient = new WebClient(process.env.SLACK_TOKEN);
+const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
 async function getUsername(id) {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/users.profile.get',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      user: id,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  let username = id
-  await request(options, (error, response, body) => {
-    if (error) return
-
-    const parsedBody = JSON.parse(body)
-    if (parsedBody.ok) {
-      username = parsedBody.profile.display_name
-    }
-  })
-
-  return username
+  return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.display_name)
 }
 
 function getMessageHistory(from = 0, to = Date.now()) {
@@ -39,7 +16,7 @@ function getMessageHistory(from = 0, to = Date.now()) {
     oldest: from,
     latest: to,
   }).then((res) => {
-    console.log(res)
+    // console.log(res)
     if (res.ok) {
       const users = {} // simulate DB
       res.messages.forEach((message) => {
@@ -53,14 +30,17 @@ function getMessageHistory(from = 0, to = Date.now()) {
               const previousScore = users[user] || 0
               // redis.set(user, score + bestReactionCount)
               users[user] = previousScore + bestReactionCount
-              console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, users[user])
+              // console.log(`${user} wins ${users[user]} points`)
+              userEarnPoints(user, bestReactionCount).then((res) => {
+                console.log(`User points added - ${res}`)
+              })
             }
           })
         }
       })
 
-      // Establish the leaderboard
+      // DEBUG: remove this later, since we have redis now
+      // Establish the (local, ephemeral) leaderboard
       const leaderboard = Object.entries(users).map(async ([userId, score]) => ({
         userId,
         score,
@@ -71,50 +51,9 @@ function getMessageHistory(from = 0, to = Date.now()) {
   })
 }
 
-const getPreviousHourMessages = async () => {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/channels.history',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      channel: 'C027VGR1H',
-      count: 100,
-      latest: (Date.now() / 1000) - 3600,
-      oldest: (Date.now() / 1000) - 7200,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  request(options, (error, response, body) => {
-    if (error) {
-      console.error(error)
-    }
-
-    const parsedBody = JSON.parse(body)
-
-    if (parsedBody.ok) {
-      parsedBody.messages.forEach((message) => {
-        if (message.reactions) {
-          let bestReactionCount = 0
-          message.reactions.forEach((reaction) => {
-            if (reaction.count >= bestReactionCount) {
-              bestReactionCount = reaction.count
-              const user = reaction.users[0]
-              // console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, bestReactionCount).then((res) => {
-                console.log(`User points added - ${res}`)
-              })
-            }
-          })
-        }
-      })
-
-      displayDatabase()
-    }
-  })
+async function getPreviousHourMessages() {
+  return getMessageHistory((Date.now() / 1000) - 7200, (Date.now() / 1000) - 3600)
+    .then(() => displayDatabase())
 }
 
 /* SLACK STUFF */
@@ -143,10 +82,11 @@ const getPreviousHourMessages = async () => {
 
 const express = require('express')
 
+const PORT = process.env.PORT || 8080
 express()
   .get('/', async (req, res) => {
-    await getMessageHistory()
+    // await getMessageHistory()
     await getPreviousHourMessages()
     res.render('pages/index.pug')
   })
-  .listen(8080, () => console.log('Listening on port 8080...'))
+  .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

@@ -2,6 +2,34 @@
 const request = require('request')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
+const getUsername = async (id) => {
+  const options = {
+    method: 'GET',
+    url: 'https://slack.com/api/users.profile.get',
+    qs:
+     {
+       token: process.env.SLACK_TOKEN,
+       user: id,
+     },
+    headers:
+      {
+        'cache-control': 'no-cache',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+  }
+
+  let username = id
+  await request(options, (error, response, body) => {
+    if (error) return
+
+    const parsedBody = JSON.parse(body)
+    if (parsedBody.ok) {
+      username = parsedBody.profile.display_name
+    }
+  })
+
+  return username
+}
 
 function getMessageHistory() {
   const options = {
@@ -49,40 +77,13 @@ function getMessageHistory() {
       })
 
       // Establish the leaderboard
-      let leaderboard = {}
-      leaderboard = users.map((score, userId) => { getUsername(userId), score })
+      const leaderboard = users.map(({ score, userId }) => ({
+        username: getUsername(userId),
+        score,
+      }))
       console.log(leaderboard)
     }
   })
-}
-
-const getUsername = async (id) => {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/users.profile.get',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       user: id,
-     },
-    headers:
-      {
-        'cache-control': 'no-cache',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-  }
-
-  let username = id
-  await request(options, (error, response, body) => {
-    if (error) return
-
-    const parsedBody = JSON.parse(body)
-    if (parsedBody.ok) {
-      username = parsedBody.profile.display_name
-    }
-  })
-
-  return username
 }
 
 const getPreviousHourMessages = async () => {

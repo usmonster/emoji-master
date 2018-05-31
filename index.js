@@ -49,7 +49,7 @@ slackEvents.start(port).then(() => {
 
 /* REDIS STUFF */
 
-//const redis = require('redis').createClient(process.env.REDIS_URL)
+// const redis = require('redis').createClient(process.env.REDIS_URL)
 // TODO: Use redis
 
 /* EXPRESS STUFF (temporary) */
@@ -60,5 +60,5 @@ const app = express()
 app.get('/', async (req, res) => {
   res.send('Hello world!')
 })
-app.listen(80)
-console.log('Listening on port 80...')
+app.listen(443)
+console.log('Listening on port 443...')

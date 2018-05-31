@@ -53,7 +53,6 @@ request(options, (error, response, body) => {
     users.map((score, userId) => {
         leaderboard[userId] = {username: getUsername(userId), score}
     })
-    leaderboard.sort((u1, u2) => u2.score -u1.score)
     console.log(leaderboard)
   }
 })

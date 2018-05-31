@@ -138,8 +138,8 @@ const getPreviousHourMessages = async () => {
   })
 }
 
-getMessageHistory()
-// getPreviousHourMessages()
+// getMessageHistory()
+getPreviousHourMessages()
 
 /* SLACK STUFF */
 // TODO: use listeners?

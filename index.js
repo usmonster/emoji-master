@@ -9,7 +9,7 @@ const options = {
    {
      token: process.env.SLACK_TOKEN,
      channel: 'C027VGR1H',
-     count: 10
+     count: 100
    },
   headers:
    {
@@ -32,7 +32,7 @@ request(options, (error, response, body) => {
         if (message.reactions) {
             bestReactionCount = 0
             message.reactions.forEach(reaction => {
-                if (reaction.count > bestReactionCount) {
+                if (reaction.count >= bestReactionCount) {
                     bestReactionCount = reaction.count
                     user = reaction.users[0]
                     //score = redis.get(user) || 0

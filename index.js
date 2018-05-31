@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const request = require('request')
-const { userEarnPoints } = require('./redis')
+const { userEarnPoints, displayDatabase } = require('./redis')
 
 const options = {
   method: 'GET',
@@ -46,6 +46,7 @@ request(options, (error, response, body) => {
       }
     })
 
+    displayDatabase()
     console.log(users)
   }
 })

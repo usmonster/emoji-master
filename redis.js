@@ -13,7 +13,7 @@ function userEarnPoints(user, points) {
 	return getAsync(user).then(
 		(res) => {
 	    	let score = 0
-	    	if (res === null) {
+	    	if (res !== null) {
 	    		score = res.score + points
 	    	}
 	    	return (setAsync(user, score))

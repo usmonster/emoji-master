@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const redis = require('redis').createClient(process.env.REDIS_URL)
-var request = require("request")
+const request = require('request')
 
 var options = { method: 'GET',
   url: 'https://slack.com/api/channels.history',
@@ -38,7 +38,8 @@ slackEvents.start(port).then(() => {
   console.log(`server listening on port ${port}`)
 })
 
-const app = require('express')
+const express = require('express')
+const app = express()
 app.get('/', async (req, res) => {
   res.send('Hello world!')
 })

@@ -32,8 +32,8 @@ request(options, (error, response, body) => {
         if (message.reactions) {
             bestReactionCount = 0
             message.reactions.forEach(reaction => {
-                if (reactions.count > bestReactionCount) {
-                    bestReactionCount = reactions.count
+                if (reaction.count > bestReactionCount) {
+                    bestReactionCount = reaction.count
                     user = reaction.users[0]
                     //score = redis.get(user) || 0
                     previousScore = users[user] || 0

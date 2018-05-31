@@ -18,29 +18,26 @@ function userEarnPoints(user, points) {
       if (score !== null) {
         newScore = score + points
       }
-      return (zaddAsync('leaderboard', newScore, user))
-    }).then((res) => {
-      console.log(`User points successfully set - ${res}`)
-    }).catch((err) => {
-      console.error(err)
-    })
+      return zaddAsync('leaderboard', newScore, user)
+    }).then((total) => {
+      console.log(`User points successfully set - ${total}`)
+      return total
+    }).catch(console.error)
 }
 
 function getLeaderBoard(numberOfUsers) {
   return zrevrangeAsync('leaderboard', 0, numberOfUsers, 'WITHSCORES')
     .then((res) => {
-    	console.log('getleaderboardstart')
+      console.log('getleaderboardstart')
       console.log(JSON.stringify(res))
-    	console.log('getleaderboardend')
+      console.log('getleaderboardend')
     })
 }
 
 function displayDatabase() {
   return zrevrangebyscoreAsync('leaderboard', '+inf', -1).then((res) => {
     console.log(JSON.stringify(res))
-  }).catch((err) => {
-    console.error(err)
-  })
+  }).catch(console.error)
 }
 
 getLeaderBoard(3)

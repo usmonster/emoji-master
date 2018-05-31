@@ -8,7 +8,7 @@ const zrevrangeAsync = promisify(client.zrevrange).bind(client)
 const zrevrangebyscoreAsync = promisify(client.zrevrangebyscore).bind(client)
 
 client.on('error', (err) => {
-  console.log(`Error: ${err}`)
+  console.error(`Error: ${err}`)
 })
 
 function userEarnPoints(user, points) {
@@ -16,11 +16,11 @@ function userEarnPoints(user, points) {
     .then((score) => {
       let newScore = points
       if (score !== null) {
-        newScore = score + points
+        newScore = +score + points
       }
-      return zaddAsync('leaderboard', newScore, user)
+      return zaddAsync('leaderboard', 'INCR', newScore, user)
     }).then((total) => {
-      console.log(`User points successfully set - ${total}`)
+      console.log(`User points successfully set - ${total}`) // DEBUG
       return total
     }).catch(console.error)
 }
@@ -28,15 +28,16 @@ function userEarnPoints(user, points) {
 function getLeaderBoard(numberOfUsers) {
   return zrevrangeAsync('leaderboard', 0, numberOfUsers, 'WITHSCORES')
     .then((res) => {
-      console.log('getleaderboardstart')
-      console.log(JSON.stringify(res))
-      console.log('getleaderboardend')
+      console.log('getleaderboardstart') // DEBUG
+      console.log(JSON.stringify(res)) // DEBUG
+      console.log('getleaderboardend') // DEBUG
     })
 }
 
 function displayDatabase() {
   return zrevrangebyscoreAsync('leaderboard', '+inf', -1).then((res) => {
     console.log(JSON.stringify(res))
+    return res
   }).catch(console.error)
 }
 

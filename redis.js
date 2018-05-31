@@ -29,7 +29,7 @@ function displayDatabase() {
   return getKeysAsync('*').then((keys) => {
     for (let i = 0; i < keys.length; i += 1) {
       getAsync(keys[i]).then((values) => {
-        console.log(`${keys[i]} have ${values.score} points`)
+        console.log(`${keys[i]} have ${values} points`)
       }).catch((err) => {
         console.error(err)
       })

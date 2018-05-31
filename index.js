@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const request = require('request')
 const { WebClient } = require('@slack/client')
 const { userEarnPoints, displayDatabase } = require('./redis')
 

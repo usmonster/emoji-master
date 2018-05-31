@@ -1,21 +1,29 @@
 #!/usr/bin/env node
+const r = require('request-promise-native')
 const request = require('request')
 const { userEarnPoints, displayDatabase } = require('./redis')
+
+const slackClient = r.defaults({
+  baseUrl: 'https://slack.com/api',
+  json: true,
+  headers: {
+    'cache-control': 'no-cache',
+    'content-type': 'application/x-www-form-urlencoded',
+  },
+})
 
 const getUsername = async (id) => {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/users.profile.get',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       user: id,
-     },
-    headers:
-      {
-        'cache-control': 'no-cache',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      user: id,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
   }
 
   let username = id
@@ -35,17 +43,15 @@ function getMessageHistory() {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/channels.history',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       channel: 'C027VGR1H',
-       count: 100,
-     },
-    headers:
-     {
-       'cache-control': 'no-cache',
-       'content-type': 'application/x-www-form-urlencoded',
-     },
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      channel: 'C027VGR1H',
+      count: 100,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
   }
 
   request(options, (error, response, body) => {
@@ -90,19 +96,17 @@ const getPreviousHourMessages = async () => {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/channels.history',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       channel: 'C027VGR1H',
-       count: 100,
-       latest: (Date.now() / 1000) - 3600,
-       oldest: (Date.now() / 1000) - 7200,
-     },
-    headers:
-     {
-       'cache-control': 'no-cache',
-       'content-type': 'application/x-www-form-urlencoded',
-     },
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      channel: 'C027VGR1H',
+      count: 100,
+      latest: (Date.now() / 1000) - 3600,
+      oldest: (Date.now() / 1000) - 7200,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
   }
 
   request(options, (error, response, body) => {
@@ -163,9 +167,8 @@ getPreviousHourMessages()
 
 const express = require('express')
 
-const app = express()
-app.get('/', (req, res) => {
-  res.render('pages/index.pug')
-})
-app.listen(8080)
-console.log('Listening on port 8080...')
+express()
+  .get('/', (req, res) => {
+    res.render('pages/index.pug')
+  })
+  .listen(8080, () => console.log('Listening on port 8080...'))

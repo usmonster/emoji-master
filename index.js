@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 const request = require('request')
+const { userEarnPoints } = require('./redis')
 
 const options = {
   method: 'GET',
@@ -40,6 +41,7 @@ request(options, (error, response, body) => {
                     //redis.set(user, score + bestReactionCount)
                     users[user] = previousScore + bestReactionCount
                     console.log(`${user} wins ${users[user]} points`)
+                    userEarnPoints(user, users[user])
                 }
             })
           }

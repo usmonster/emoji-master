@@ -2,7 +2,7 @@
 const redis = require('redis').createClient(process.env.REDIS_URL);
 
 const createSlackEventAdapter = require('@slack/events-api').createSlackEventAdapter;
-const slackEvents = createSlackEventAdapter(process.env.SLACK_VERIFICATION_TOKEN);
+const slackEvents = createSlackEventAdapter(process.env.SLACK_TOKEN);
 const port = process.env.PORT || 3000;
 
 slackEvents.on('reaction_added', (event) => {

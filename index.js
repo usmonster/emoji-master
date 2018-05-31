@@ -1,18 +1,11 @@
 #!/usr/bin/env node
-const r = require('request-promise-native')
 const request = require('request')
+const { WebClient } = require('@slack/client')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
-const slackClient = r.defaults({
-  baseUrl: 'https://slack.com/api',
-  json: true,
-  headers: {
-    'cache-control': 'no-cache',
-    'content-type': 'application/x-www-form-urlencoded',
-  },
-})
+const slackClient = new WebClient(process.env.SLACK_TOKEN);
 
-const getUsername = async (id) => {
+async function getUsername(id) {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/users.profile.get',
@@ -39,32 +32,17 @@ const getUsername = async (id) => {
   return username
 }
 
-function getMessageHistory() {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/channels.history',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      channel: 'C027VGR1H',
-      count: 100,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  request(options, (error, response, body) => {
-    if (error) {
-      console.error(error)
-    }
-
-    const parsedBody = JSON.parse(body)
-    // console.log(parsedBody)
-
-    if (parsedBody.ok) {
-      const users = [] // simulate DB
-      parsedBody.messages.forEach((message) => {
+function getMessageHistory(from = 0, to = Date.now()) {
+  return slackClient.channels.history({
+    channel: 'C027VGR1H',
+    count: 100,
+    oldest: from,
+    latest: to,
+  }).then((res) => {
+    // console.log(res)
+    if (res.ok) {
+      const users = {} // simulate DB
+      res.messages.forEach((message) => {
         if (message.reactions) {
           let bestReactionCount = 0
           message.reactions.forEach((reaction) => {
@@ -83,11 +61,12 @@ function getMessageHistory() {
       })
 
       // Establish the leaderboard
-      const leaderboard = users.map(({ score, userId }) => ({
-        username: getUsername(userId),
+      const leaderboard = Object.entries(users).map(([userId, score]) => ({
+        userId,
         score,
+        username: getUsername(userId),
       }))
-      // console.log(leaderboard)
+      console.log(leaderboard)
     }
   })
 }

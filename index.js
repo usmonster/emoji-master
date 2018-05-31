@@ -138,7 +138,7 @@ const getPreviousHourMessages = async () => {
   })
 }
 
-// getMessageHistory()
+getMessageHistory()
 // getPreviousHourMessages()
 
 /* SLACK STUFF */

@@ -2,58 +2,59 @@
 const request = require('request')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
-const options = {
-  method: 'GET',
-  url: 'https://slack.com/api/channels.history',
-  qs:
-   {
-     token: process.env.SLACK_TOKEN,
-     channel: 'C027VGR1H',
-     count: 100,
-   },
-  headers:
-   {
-     'cache-control': 'no-cache',
-     'content-type': 'application/x-www-form-urlencoded',
-   },
+
+function getMessageHistory() {
+  const options = {
+    method: 'GET',
+    url: 'https://slack.com/api/channels.history',
+    qs:
+     {
+       token: process.env.SLACK_TOKEN,
+       channel: 'C027VGR1H',
+       count: 100,
+     },
+    headers:
+     {
+       'cache-control': 'no-cache',
+       'content-type': 'application/x-www-form-urlencoded',
+     },
+  }
+
+  request(options, (error, response, body) => {
+    if (error) {
+      console.error(error)
+    }
+
+    const parsedBody = JSON.parse(body)
+    console.log(parsedBody)
+
+    if (parsedBody.ok) {
+      const users = [] // simulate DB
+      parsedBody.messages.forEach((message) => {
+        if (message.reactions) {
+          let bestReactionCount = 0
+          message.reactions.forEach((reaction) => {
+            if (reaction.count >= bestReactionCount) {
+              bestReactionCount = reaction.count
+              const user = reaction.users[0]
+              // score = redis.get(user) || 0
+              const previousScore = users[user] || 0
+              // redis.set(user, score + bestReactionCount)
+              users[user] = previousScore + bestReactionCount
+              console.log(`${user} wins ${users[user]} points`)
+              userEarnPoints(user, users[user])
+            }
+          })
+        }
+      })
+
+      // Establish the leaderboard
+      let leaderboard = {}
+      leaderboard = users.map((score, userId) => { getUsername(userId), score })
+      console.log(leaderboard)
+    }
+  })
 }
-
-request(options, (error, response, body) => {
-  if (error) {
-    console.error(error)
-  }
-
-  const parsedBody = JSON.parse(body)
-  console.log(parsedBody)
-
-  if (parsedBody.ok) {
-    const users = [] // simulate DB
-    parsedBody.messages.forEach((message) => {
-      if (message.reactions) {
-        let bestReactionCount = 0
-        message.reactions.forEach((reaction) => {
-          if (reaction.count >= bestReactionCount) {
-            bestReactionCount = reaction.count
-            const user = reaction.users[0]
-            // score = redis.get(user) || 0
-            const previousScore = users[user] || 0
-            // redis.set(user, score + bestReactionCount)
-            users[user] = previousScore + bestReactionCount
-            console.log(`${user} wins ${users[user]} points`)
-            userEarnPoints(user, users[user])
-          }
-        })
-      }
-    })
-
-    displayDatabase()
-
-    // Establish the leaderboard
-    leaderboard = {}
-    leaderboard = users.map((score, userId) => {username: getUsername(userId), score})
-    console.log(leaderboard)
-  }
-})
 
 const getUsername = async (id) => {
   const options = {
@@ -64,25 +65,76 @@ const getUsername = async (id) => {
        token: process.env.SLACK_TOKEN,
        user: id,
      },
-     headers:
+    headers:
       {
         'cache-control': 'no-cache',
         'content-type': 'application/x-www-form-urlencoded',
       },
+  }
+
+  let username = id
+  await request(options, (error, response, body) => {
+    if (error) return
+
+    const parsedBody = JSON.parse(body)
+    if (parsedBody.ok) {
+      username = parsedBody.profile.display_name
+    }
+  })
+
+  return username
+}
+
+const getPreviousHourMessages = async () => {
+  const options = {
+    method: 'GET',
+    url: 'https://slack.com/api/channels.history',
+    qs:
+     {
+       token: process.env.SLACK_TOKEN,
+       channel: 'C027VGR1H',
+       count: 100,
+       latest: (Date.now() / 1000) - 3600,
+       oldest: (Date.now() / 1000) - 7200,
+     },
+    headers:
+     {
+       'cache-control': 'no-cache',
+       'content-type': 'application/x-www-form-urlencoded',
+     },
+  }
+
+  request(options, (error, response, body) => {
+    if (error) {
+      console.error(error)
     }
 
-    let username = id
-    await request(options, (error, response, body) => {
-      if (error) return
+    const parsedBody = JSON.parse(body)
 
-      const parsedBody = JSON.parse(body)
-      if (parsedBody.ok) {
-        username = parsedBody.profile.display_name
-      }
-    })
+    if (parsedBody.ok) {
+      parsedBody.messages.forEach((message) => {
+        if (message.reactions) {
+          let bestReactionCount = 0
+          message.reactions.forEach((reaction) => {
+            if (reaction.count >= bestReactionCount) {
+              bestReactionCount = reaction.count
+              const user = reaction.users[0]
+              // console.log(`${user} wins ${users[user]} points`)
+              userEarnPoints(user, bestReactionCount).then((res) => {
+                console.log(`User points added - ${res}`)
+              })
+            }
+          })
+        }
+      })
 
-    return username
+      displayDatabase()
+    }
+  })
 }
+
+getMessageHistory()
+getPreviousHourMessages()
 
 /* SLACK STUFF */
 // TODO: use listeners?

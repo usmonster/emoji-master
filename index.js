@@ -9,7 +9,7 @@ const options = {
    {
      token: process.env.SLACK_TOKEN,
      channel: 'C027VGR1H',
-     count: 100
+     count: 100,
    },
   headers:
    {
@@ -23,29 +23,29 @@ request(options, (error, response, body) => {
     console.error(error)
   }
 
-  parsedBody = JSON.parse(body)
+  const parsedBody = JSON.parse(body)
   console.log(parsedBody)
 
   if (parsedBody.ok) {
-      users = [] // simulate DB
-      parsedBody.messages.forEach(message => {
-        if (message.reactions) {
-            bestReactionCount = 0
-            message.reactions.forEach(reaction => {
-                if (reaction.count >= bestReactionCount) {
-                    bestReactionCount = reaction.count
-                    user = reaction.users[0]
-                    //score = redis.get(user) || 0
-                    previousScore = users[user] || 0
-                    //redis.set(user, score + bestReactionCount)
-                    users[user] = previousScore + bestReactionCount
-                    console.log(`${user} wins ${users[user]} points`)
-                }
-            })
+    const users = [] // simulate DB
+    parsedBody.messages.forEach((message) => {
+      if (message.reactions) {
+        let bestReactionCount = 0
+        message.reactions.forEach((reaction) => {
+          if (reaction.count >= bestReactionCount) {
+            bestReactionCount = reaction.count
+            const user = reaction.users[0]
+            // score = redis.get(user) || 0
+            const previousScore = users[user] || 0
+            // redis.set(user, score + bestReactionCount)
+            users[user] = previousScore + bestReactionCount
+            console.log(`${user} wins ${users[user]} points`)
           }
-      })
+        })
+      }
+    })
 
-      console.log(users)
+    console.log(users)
   }
 })
 

@@ -23,6 +23,7 @@ request(options, (error, response, body) => {
   }
 
   if (body.ok == 'true') {
+      users = [] // simulate DB
       body.messages.forEach(message => {
         if (message.reactions) {
             bestReactionCount = 0
@@ -30,13 +31,17 @@ request(options, (error, response, body) => {
                 if (reactions.count > bestReactionCount) {
                     bestReactionCount = reactions.count
                     user = reaction.users[0]
-                    score = redis.get(user) || 0
-                    redis.set(user, score + bestReactionCount)
-                    console.log(`${user} wins ${score} points`)
+                    //score = redis.get(user) || 0
+                    previousScore = users[user] || 0
+                    //redis.set(user, score + bestReactionCount)
+                    users[user] = previousScore + bestReactionCount
+                    console.log(`${user} wins ${users[user]} points`)
                 }
             })
           }
       })
+
+      console.log(users)
   }
 })
 

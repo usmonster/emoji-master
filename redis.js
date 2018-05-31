@@ -13,11 +13,11 @@ client.on('error', (err) => {
 function userEarnPoints(user, points) {
   return getAsync(user)
     .then((res) => {
-      let score = 0
+      let totalScore = 0
       if (res !== null) {
-        score = res.score + points
+        totalScore = res.score + points
       }
-      return (setAsync(user, score))
+      return (setAsync(user, { score: totalScore }))
     }).then((res) => {
       console.log(`User points successfully set - ${res}`)
     }).catch((err) => {

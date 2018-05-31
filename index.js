@@ -1,23 +1,57 @@
 #!/usr/bin/env node
+const r = require('request-promise-native')
 const request = require('request')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
+const slackClient = r.defaults({
+  baseUrl: 'https://slack.com/api',
+  json: true,
+  headers: {
+    'cache-control': 'no-cache',
+    'content-type': 'application/x-www-form-urlencoded',
+  },
+})
+
+const getUsername = async (id) => {
+  const options = {
+    method: 'GET',
+    url: 'https://slack.com/api/users.profile.get',
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      user: id,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
+  }
+
+  let username = id
+  await request(options, (error, response, body) => {
+    if (error) return
+
+    const parsedBody = JSON.parse(body)
+    if (parsedBody.ok) {
+      username = parsedBody.profile.display_name
+    }
+  })
+
+  return username
+}
 
 function getMessageHistory() {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/channels.history',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       channel: 'C027VGR1H',
-       count: 100,
-     },
-    headers:
-     {
-       'cache-control': 'no-cache',
-       'content-type': 'application/x-www-form-urlencoded',
-     },
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      channel: 'C027VGR1H',
+      count: 100,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
   }
 
   request(options, (error, response, body) => {
@@ -49,59 +83,30 @@ function getMessageHistory() {
       })
 
       // Establish the leaderboard
-      let leaderboard = {}
-      leaderboard = users.map((score, userId) => { getUsername(userId), score })
+      const leaderboard = users.map(({ score, userId }) => ({
+        username: getUsername(userId),
+        score,
+      }))
       console.log(leaderboard)
     }
   })
-}
-
-const getUsername = async (id) => {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/users.profile.get',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       user: id,
-     },
-    headers:
-      {
-        'cache-control': 'no-cache',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-  }
-
-  let username = id
-  await request(options, (error, response, body) => {
-    if (error) return
-
-    const parsedBody = JSON.parse(body)
-    if (parsedBody.ok) {
-      username = parsedBody.profile.display_name
-    }
-  })
-
-  return username
 }
 
 const getPreviousHourMessages = async () => {
   const options = {
     method: 'GET',
     url: 'https://slack.com/api/channels.history',
-    qs:
-     {
-       token: process.env.SLACK_TOKEN,
-       channel: 'C027VGR1H',
-       count: 100,
-       latest: (Date.now() / 1000) - 3600,
-       oldest: (Date.now() / 1000) - 7200,
-     },
-    headers:
-     {
-       'cache-control': 'no-cache',
-       'content-type': 'application/x-www-form-urlencoded',
-     },
+    qs: {
+      token: process.env.SLACK_TOKEN,
+      channel: 'C027VGR1H',
+      count: 100,
+      latest: (Date.now() / 1000) - 3600,
+      oldest: (Date.now() / 1000) - 7200,
+    },
+    headers: {
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
   }
 
   request(options, (error, response, body) => {
@@ -162,9 +167,8 @@ getPreviousHourMessages()
 
 const express = require('express')
 
-const app = express()
-app.get('/', (req, res) => {
-  res.render('pages/index.pug')
-})
-app.listen(8080)
-console.log('Listening on port 8080...')
+express()
+  .get('/', (req, res) => {
+    res.render('pages/index.pug')
+  })
+  .listen(8080, () => console.log('Listening on port 8080...'))

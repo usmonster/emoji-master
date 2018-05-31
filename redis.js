@@ -13,11 +13,12 @@ client.on('error', (err) => {
 function userEarnPoints(user, points) {
   return getAsync(user)
     .then((res) => {
+    	let parsedRes = JSON.parse(res);
       let totalScore = 0
-      if (res !== null) {
-        totalScore = res.score + points
+      if (parsedRes !== null) {
+        totalScore = parsedRes.score + points
       }
-      return (setAsync(user, { score: totalScore }))
+      return (setAsync(user, JSON.stringify({ score: totalScore })))
     }).then((res) => {
       console.log(`User points successfully set - ${res}`)
     }).catch((err) => {

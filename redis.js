@@ -27,7 +27,7 @@ function userEarnPoints(user, points) {
 }
 
 function getLeaderBoard(numberOfUsers) {
-  return zrevrangeAsync('leaderboard', 0, numberOfUsers)
+  return zrevrangeAsync('leaderboard', 0, numberOfUsers, 'WITHSCORES')
     .then((res) => {
     	console.log('getleaderboardstart')
       console.log(JSON.stringify(res))

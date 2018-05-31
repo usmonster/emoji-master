@@ -47,9 +47,45 @@ request(options, (error, response, body) => {
     })
 
     displayDatabase()
-    console.log(users)
+
+    // Establish the leaderboard
+    leaderboard = {}
+    users.map((score, userId) => {
+        leaderboard[userId] = {username: getUsername(userId), score}
+    })
+    leaderboard.sort((u1, u2) => u2.score -u1.score)
+    console.log(leaderboard)
   }
 })
+
+const getUsername = (id) => {
+  const options = {
+    method: 'GET',
+    url: 'https://slack.com/api/users.profile.get',
+    qs:
+     {
+       token: process.env.SLACK_TOKEN,
+       user: id,
+     },
+     headers:
+      {
+        'cache-control': 'no-cache',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+    }
+
+    let username = id
+    await request(options, (error, response, body) => {
+      if (error) return
+
+      const parsedBody = JSON.parse(body)
+      if (parsedBody.ok) {
+        username = parsedBody.profile.display_name
+      }
+    })
+
+    return username
+}
 
 /* SLACK STUFF */
 // TODO: use listeners?

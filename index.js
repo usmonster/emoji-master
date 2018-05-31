@@ -50,9 +50,7 @@ request(options, (error, response, body) => {
 
     // Establish the leaderboard
     leaderboard = {}
-    users.map((score, userId) => {
-        leaderboard[userId] = {username: getUsername(userId), score}
-    })
+    leaderboard = users.map((score, userId) => {username: getUsername(userId), score})
     console.log(leaderboard)
   }
 })

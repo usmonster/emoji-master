@@ -17,7 +17,7 @@
     "reacji",
     "game"
   ],
-  "author": "usmonster ()",
+  "author": "usmonster (https://github.com/usmonster)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/usmonster/emoji-master/issues"
@@ -30,11 +30,8 @@
     "@slack/client": "^4.2.2",
     "@slack/events-api": "^1.0.1",
     "express": "^4.16.3",
-    "install": "^0.11.0",
     "pug": "^2.0.3",
-    "redis": "^2.8.0",
-    "request": "^2.87.0",
-    "request-promise-native": "^1.0.5"
+    "redis": "^2.8.0"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

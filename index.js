@@ -1,145 +1,61 @@
 #!/usr/bin/env node
-const r = require('request-promise-native')
-const request = require('request')
+const { WebClient } = require('@slack/client')
 const { userEarnPoints, displayDatabase } = require('./redis')
 
-const slackClient = r.defaults({
-  baseUrl: 'https://slack.com/api',
-  json: true,
-  headers: {
-    'cache-control': 'no-cache',
-    'content-type': 'application/x-www-form-urlencoded',
-  },
-})
+const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
-const getUsername = async (id) => {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/users.profile.get',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      user: id,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  let username = id
-  await request(options, (error, response, body) => {
-    if (error) return
-
-    const parsedBody = JSON.parse(body)
-    if (parsedBody.ok) {
-      username = parsedBody.profile.display_name
-    }
-  })
-
-  return username
+async function getUsername(id) {
+  return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.display_name)
 }
 
-function getMessageHistory() {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/channels.history',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      channel: 'C027VGR1H',
-      count: 100,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  request(options, (error, response, body) => {
-    if (error) {
-      console.error(error)
-    }
-
-    const parsedBody = JSON.parse(body)
-    // console.log(parsedBody)
-
-    if (parsedBody.ok) {
-      const users = [] // simulate DB
-      parsedBody.messages.forEach((message) => {
-        if (message.reactions) {
-          let bestReactionCount = 0
-          message.reactions.forEach((reaction) => {
-            if (reaction.count >= bestReactionCount) {
-              bestReactionCount = reaction.count
-              const user = reaction.users[0]
-              // score = redis.get(user) || 0
-              const previousScore = users[user] || 0
-              // redis.set(user, score + bestReactionCount)
-              users[user] = previousScore + bestReactionCount
-              console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, users[user])
-            }
-          })
-        }
+async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
+  return slackClient.channels.history({
+    channel: 'C027VGR1H',
+    count: 100,
+    oldest: from,
+    latest: to,
+  }).then((history) => {
+    // console.log('>>> message history:')
+    // console.log(history)
+    const userScoreMap = {} // simulate DB
+    history.messages
+      .filter(message => 'reactions' in message)
+      .forEach((message) => {
+        let bestReactionCount = 0
+        // TODO: use reduce
+        message.reactions.forEach((reaction) => {
+          if (reaction.count >= bestReactionCount) {
+            bestReactionCount = reaction.count
+            const userId = reaction.users[0]
+            // score = redis.get(userId) || 0
+            const previousScore = userScoreMap[userId] || 0
+            // redis.set(userId, score + bestReactionCount)
+            userScoreMap[userId] = previousScore + bestReactionCount
+            // console.log(`${userId} wins ${users[userId]} points`)
+            userEarnPoints(userId, bestReactionCount)
+          }
+        })
       })
+    console.log(`userScoreMap: ${JSON.stringify(userScoreMap)}`)
 
-      // Establish the leaderboard
-      const leaderboard = users.map(({ score, userId }) => ({
-        username: getUsername(userId),
-        score,
-      }))
-      // console.log(leaderboard)
-    }
+    // DEBUG: remove this later, since we have redis now
+    // Establish the (local, ephemeral) leaderboard
+    const fakeLeaderboard = Object.entries(userScoreMap).map(async ([userId, score]) => ({
+      userId,
+      score,
+      username: await getUsername(userId),
+    }))
+    Promise.all(fakeLeaderboard).then(console.log)
+    return fakeLeaderboard
   })
 }
 
-const getPreviousHourMessages = async () => {
-  const options = {
-    method: 'GET',
-    url: 'https://slack.com/api/channels.history',
-    qs: {
-      token: process.env.SLACK_TOKEN,
-      channel: 'C027VGR1H',
-      count: 100,
-      latest: (Date.now() / 1000) - 3600,
-      oldest: (Date.now() / 1000) - 7200,
-    },
-    headers: {
-      'cache-control': 'no-cache',
-      'content-type': 'application/x-www-form-urlencoded',
-    },
-  }
-
-  request(options, (error, response, body) => {
-    if (error) {
-      console.error(error)
-    }
-
-    const parsedBody = JSON.parse(body)
-
-    if (parsedBody.ok) {
-      parsedBody.messages.forEach((message) => {
-        if (message.reactions) {
-          let bestReactionCount = 0
-          message.reactions.forEach((reaction) => {
-            if (reaction.count >= bestReactionCount) {
-              bestReactionCount = reaction.count
-              const user = reaction.users[0]
-              // console.log(`${user} wins ${users[user]} points`)
-              userEarnPoints(user, bestReactionCount).then((res) => {
-                console.log(`User points added - ${res}`)
-              })
-            }
-          })
-        }
-      })
-
-      // displayDatabase()
-    }
-  })
+async function getPreviousHourMessages() {
+  // Note: times are in seconds
+  const oneHour = 60 * 60
+  const now = Date.now() / 1e3
+  return getMessageHistory(now - (oneHour * 2), now - oneHour)
 }
-
-// getMessageHistory()
-getPreviousHourMessages()
 
 /* SLACK STUFF */
 // TODO: use listeners?
@@ -167,8 +83,13 @@ getPreviousHourMessages()
 
 const express = require('express')
 
+const PORT = process.env.PORT || 8080
 express()
-  .get('/', (req, res) => {
-    res.render('pages/index.pug')
+  .get('/', async (req, res) => {
+    const data = {}
+    data.history = await getMessageHistory()
+    // await getPreviousHourMessages()
+    displayDatabase() // DEBUG
+    res.render('pages/index.pug', data)
   })
-  .listen(8080, () => console.log('Listening on port 8080...'))
+  .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

@@ -39,7 +39,7 @@ function getMessageHistory(from = 0, to = Date.now()) {
     oldest: from,
     latest: to,
   }).then((res) => {
-    // console.log(res)
+    console.log(res)
     if (res.ok) {
       const users = {} // simulate DB
       res.messages.forEach((message) => {
@@ -61,10 +61,10 @@ function getMessageHistory(from = 0, to = Date.now()) {
       })
 
       // Establish the leaderboard
-      const leaderboard = Object.entries(users).map(([userId, score]) => ({
+      const leaderboard = Object.entries(users).map(async ([userId, score]) => ({
         userId,
         score,
-        username: getUsername(userId),
+        username: await getUsername(userId),
       }))
       console.log(leaderboard)
     }
@@ -112,13 +112,10 @@ const getPreviousHourMessages = async () => {
         }
       })
 
-      // displayDatabase()
+      displayDatabase()
     }
   })
 }
-
-// getMessageHistory()
-getPreviousHourMessages()
 
 /* SLACK STUFF */
 // TODO: use listeners?
@@ -147,7 +144,9 @@ getPreviousHourMessages()
 const express = require('express')
 
 express()
-  .get('/', (req, res) => {
+  .get('/', async (req, res) => {
+    await getMessageHistory()
+    await getPreviousHourMessages()
     res.render('pages/index.pug')
   })
   .listen(8080, () => console.log('Listening on port 8080...'))

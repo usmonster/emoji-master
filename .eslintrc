@@ -1,6 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "semi": ["error", "never"]
+    "semi": ["error", "never"],
+    "no-console": "off"
   }
 }

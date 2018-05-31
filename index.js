@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 const request = require('request')
 const { userEarnPoints } = require('./redis')
 
@@ -52,31 +51,26 @@ request(options, (error, response, body) => {
 })
 
 /* SLACK STUFF */
-
-const { createSlackEventAdapter } = require('@slack/events-api')
-
-const slackEvents = createSlackEventAdapter(process.env.SLACK_TOKEN)
-const port = process.env.PORT || 3000
-
-slackEvents.on('reaction_added', (event) => {
-  console.log(`Received a reaction_added event: ${JSON.stringify(event)}`)
-})
-
-slackEvents.on('reaction_removed', (event) => {
-  console.log(`Received a reaction_removed event: ${JSON.stringify(event)}`)
-})
-
-slackEvents.on('error', console.error)
-
-// Start a basic HTTP server
-slackEvents.start(port).then(() => {
-  console.log(`server listening on port ${port}`)
-})
-
-/* REDIS STUFF */
-
-// const redis = require('redis').createClient(process.env.REDIS_URL)
-// TODO: Use redis
+// TODO: use listeners?
+// const { createSlackEventAdapter } = require('@slack/events-api')
+//
+// const slackEvents = createSlackEventAdapter(process.env.SLACK_TOKEN)
+// const port = process.env.PORT || 3000
+//
+// slackEvents.on('reaction_added', (event) => {
+//   console.log(`Received a reaction_added event: ${JSON.stringify(event)}`)
+// })
+//
+// slackEvents.on('reaction_removed', (event) => {
+//   console.log(`Received a reaction_removed event: ${JSON.stringify(event)}`)
+// })
+//
+// slackEvents.on('error', console.error)
+//
+// // Start a basic HTTP server
+// slackEvents.start(port).then(() => {
+//   console.log(`server listening on port ${port}`)
+// })
 
 /* EXPRESS STUFF (temporary) */
 

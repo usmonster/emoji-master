@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    title Emoji Master!
+
+    style.
+      .good { color: #6aa84f; }
+      .bad { color: red; }
+      .big { font-size: larger; }
+      .taco { margin: 1em auto; }
+      
+    body
+    if error
+      h1.taco.big.bad Whoa! There's an error somewhere:
+      code.bad= error.stack
+    else
+      .big Hello World

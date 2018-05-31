@@ -20,9 +20,24 @@ const options = {
 request(options, (error, response, body) => {
   if (error) {
     console.error(error)
-    // throw new Error(error)
   }
-  console.log(body)
+
+  if (body.ok == 'true') {
+      body.messages.forEach(message => {
+        if (message.reactions) {
+            bestReactionCount = 0
+            message.reactions.forEach(reaction => {
+                if (reactions.count > bestReactionCount) {
+                    bestReactionCount = reactions.count
+                    user = reaction.users[0]
+                    score = redis.get(user) || 0
+                    redis.set(user, score + bestReactionCount)
+                    console.log(`${user} wins ${score} points`)
+                }
+            })
+          }
+      })
+  }
 })
 
 /* SLACK STUFF */

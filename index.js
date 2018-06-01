@@ -104,7 +104,7 @@ express()
     }
     res.render('pages/index.pug', data)
   })
-  .get('/leaderboard', (req, res) => {
+  .post('/leaderboard', (req, res) => {
     console.log('get leaderboard')
     emojiMasterCommand()
   })

@@ -5,17 +5,28 @@ const url = process.env.SLACK_WEBHOOK_URL
 const webhook = new IncomingWebhook(url)
 
 function emojiMasterCommand() {
-  getLeaderBoard(3).then((res) => {
-    let messageObj = getMessageObj(res)
+  let res = await getLeaderBoard(3)
+  let messageObj = getMessageObj(res)
+  
+  webhook.send(messageObj, (err, res) => {
+      if (err) {
+          console.log('Error:', err)
+      } else {
+          console.log('Message sent: ', res)
+      }
+  });
+
+  // getLeaderBoard(3).then((res) => {
+  //   let messageObj = getMessageObj(res)
     
-    webhook.send(messageObj, (err, res) => {
-        if (err) {
-            console.log('Error:', err)
-        } else {
-            console.log('Message sent: ', res)
-        }
-    });
-  })
+  //   webhook.send(messageObj, (err, res) => {
+  //       if (err) {
+  //           console.log('Error:', err)
+  //       } else {
+  //           console.log('Message sent: ', res)
+  //       }
+  //   });
+  // })
 }
 
 function getMessageObj(res) {

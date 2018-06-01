@@ -8,7 +8,6 @@ const getAsync = promisify(client.get).bind(client)
 const setAsync = promisify(client.set).bind(client)
 
 // Sorted list queries
-const zscoreAsync = promisify(client.zscore).bind(client)
 const zaddAsync = promisify(client.zadd).bind(client)
 const zrevrangeAsync = promisify(client.zrevrange).bind(client)
 const zrevrangebyscoreAsync = promisify(client.zrevrangebyscore).bind(client)
@@ -18,16 +17,11 @@ client.on('error', (err) => {
 })
 
 function userEarnPoints(user, points) {
-  return zscoreAsync('leaderboard', user).then((score) => {
-    // let newScore = points
-    // if (score !== null) {
-    //   newScore = parseInt(score) + parseInt(points)
-    // }
-    return zaddAsync('leaderboard', 'INCR', parseInt(points), user)
-  }).then((total) => {
-    console.log(`User points successfully set - ${total}`) // DEBUG
-    return total
-  }).catch(console.error)
+  return zaddAsync('leaderboard', 'INCR', parseInt(points, 10), user)
+    .then((total) => {
+      console.log(`User points successfully set - ${total}`) // DEBUG
+      return total
+    }).catch(console.error)
 }
 
 function updateUser(userId, username) {
@@ -36,16 +30,16 @@ function updateUser(userId, username) {
     .catch(console.error)
 }
 
-function getLeaderBoard(limit) {
+async function getLeaderBoard(limit) {
   return zrevrangeAsync('leaderboard', 0, limit, 'WITHSCORES')
-    .then(async(res) => {
-      let leaderboard = []
+    .then(async (res) => {
+      const leaderboard = []
       for (let i = 0; i < res.length; i += 2) {
-        let name = await getAsync(res[i])
+        const name = await getAsync(res[i])
         leaderboard.push({
           id: res[i],
           score: res[i + 1],
-          name: name
+          name: name,
         })
       }
       return (leaderboard)
@@ -59,4 +53,9 @@ function displayDatabase() {
   }).catch(console.error)
 }
 
-module.exports = { userEarnPoints, displayDatabase, getLeaderBoard, updateUser }
+module.exports = {
+  userEarnPoints,
+  displayDatabase,
+  getLeaderBoard,
+  updateUser,
+}

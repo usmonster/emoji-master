@@ -4,7 +4,7 @@ const { getLeaderBoard } = require('./redis')
 const url = process.env.SLACK_WEBHOOK_URL
 const webhook = new IncomingWebhook(url)
 
-function emojiMasterCommand() {
+async function emojiMasterCommand() {
   let res = await getLeaderBoard(3)
   let messageObj = getMessageObj(res)
   

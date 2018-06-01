@@ -104,8 +104,8 @@ express()
     }
     res.render('pages/index.pug', data)
   })
-  .post('/leaderboard', (req, res) => {
-    emojiMasterCommand()
+  .post('/leaderboard', async (req, res) => {
+    await emojiMasterCommand()
     return res
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

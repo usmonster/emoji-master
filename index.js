@@ -105,7 +105,7 @@ express()
     res.render('pages/index.pug', data)
   })
   .post('/leaderboard', (req, res) => {
-    console.log('get leaderboard')
     emojiMasterCommand()
+    return res
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

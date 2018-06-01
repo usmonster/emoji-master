@@ -35,14 +35,11 @@ async function getLeaderBoard(limit) {
     .then(async (res) => {
       const leaderboard = []
       for (let i = 0; i < res.length; i += 2) {
-        const name = await getAsync(res[i])
-        leaderboard.push({
-          id: res[i],
-          score: res[i + 1],
-          name: name,
-        })
+        const [id, score] = [res[i], res[i + 1]]
+        const name = await getAsync(id)
+        leaderboard.push({ id, score, name })
       }
-      return (leaderboard)
+      return leaderboard
     })
 }
 

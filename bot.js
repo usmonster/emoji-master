@@ -31,9 +31,9 @@ async function emojiMasterCommand() {
 
 function getMessageObj(res) {
 	const message = `#LEADERBOARD
-  :first_place_medal: *${res[0].name}* with a score of ${res[0].score}
-  :second_place_medal: *${res[1].name}* with a score of ${res[1].score}
-  :third_place_medal: *${res[2].name}* with a score of ${res[2].score}
+  :hamburger: *${res[0].name}* with a score of ${res[0].score}
+  :fries: *${res[1].name}* with a score of ${res[1].score}
+  :cup_with_straw: *${res[2].name}* with a score of ${res[2].score}
   `
 
 	const messageObj = {

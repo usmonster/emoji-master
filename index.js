@@ -40,12 +40,13 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
 
     // DEBUG: remove this later, since we have redis now
     // Establish the (local, ephemeral) leaderboard
-    const fakeLeaderboard = Object.entries(userScoreMap).map(async ([userId, score]) => ({
+    return Promise.all(Object.entries(userScoreMap).map(async ([userId, score]) => ({
       userId,
       score,
       username: await getUsername(userId),
-    }))
-    Promise.all(fakeLeaderboard).then(console.log)
+    })))
+  }).then((fakeLeaderboard) => {
+    console.log(fakeLeaderboard)
     return fakeLeaderboard
   })
 }
@@ -87,9 +88,13 @@ const PORT = process.env.PORT || 8080
 express()
   .get('/', async (req, res) => {
     const data = {}
-    data.history = await getMessageHistory()
-    // await getPreviousHourMessages()
-    displayDatabase() // DEBUG
+    try {
+      data.leaderboard = await getMessageHistory()
+      // await getPreviousHourMessages()
+      displayDatabase() // DEBUG
+    } catch (e) {
+      data.error = e
+    }
     res.render('pages/index.pug', data)
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

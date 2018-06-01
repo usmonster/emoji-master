@@ -13,6 +13,7 @@ html
     body
     if error
       h1.taco.big.bad Whoa! There's an error somewhere:
-      code.bad= error.stack
+      pre.bad= error.stack
     else
       .big Hello World
+        pre= JSON.stringify(leaderboard, null, 2)

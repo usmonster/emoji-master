@@ -107,9 +107,7 @@ express()
   .get('/', async (req, res) => {
     const data = {}
     try {
-      const lastUpdate = await getLastUpdate()
-      // await getMessageHistory(lastUpdate)
-      await getMessageHistory(lastUpdate - (60 * 42 * 1e3)) // DEBUG: DEMO!
+      await updateMessages()
       data.leaderboard = await getLeaderBoard(1000)
       // displayDatabase() // DEBUG
     } catch (e) {

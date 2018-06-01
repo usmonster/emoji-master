@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-const { WebClient } = require('@slack/client')
-const { userEarnPoints, displayDatabase, updateUser, getLeaderBoard } = require('./redis')
 const schedule = require('node-schedule')
-const { emojiMasterCommand } = require('./bot')
+const { WebClient } = require('@slack/client')
+const {
+  // displayDatabase, // DEBUG
+  getLeaderBoard,
+  updateUser,
+  userEarnPoints,
+} = require('./lib/state')
+const { emojiMasterCommand } = require('./lib/bot')
 
 const slackClient = new WebClient(process.env.SLACK_TOKEN)
 

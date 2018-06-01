@@ -38,11 +38,17 @@ function updateUser(userId, username) {
 
 function getLeaderBoard(limit) {
   return zrevrangeAsync('leaderboard', 0, limit, 'WITHSCORES')
-    .then((res) => {
-      console.log('getleaderboardstart') // DEBUG
-      console.log(res) // DEBUG
-      console.log('getleaderboardend') // DEBUG
-      return res
+    .then(async(res) => {
+      let leaderboard = []
+      for (let i = 0; i < res.length; i += 2) {
+        let name = await getAsync(res[i])
+        leaderboard.push({
+          id: res[i],
+          score: res[i + 1],
+          name: name
+        })
+      }
+      return (leaderboard)
     })
 }
 
@@ -55,4 +61,4 @@ function displayDatabase() {
 
 // getLeaderBoard(3)
 // displayDatabase()
-module.exports = { userEarnPoints, displayDatabase, getLeaderBoard }
+module.exports = { userEarnPoints, displayDatabase, getLeaderBoard, updateUser }

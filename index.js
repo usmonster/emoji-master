@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const { WebClient } = require('@slack/client')
-const { userEarnPoints, displayDatabase } = require('./redis')
+const { userEarnPoints, displayDatabase, updateUser } = require('./redis')
+const schedule = require('node-schedule')
+const { emojiMasterCommand } = require('./bot')
 
 const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
@@ -11,7 +13,7 @@ async function getUsername(id) {
 async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
   return slackClient.channels.history({
     channel: 'C027VGR1H',
-    count: 100,
+    count: 1000,
     oldest: from,
     latest: to,
   }).then((history) => {
@@ -46,9 +48,11 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
       username: await getUsername(userId),
     })))
   }).then((fakeLeaderboard) => {
-    console.log(fakeLeaderboard)
+    fakeLeaderboard.forEach(({ userId, username }) => {
+      updateUser(userId, username)
+    })
     return fakeLeaderboard
-  })
+  }).catch(console.error)
 }
 
 async function getPreviousHourMessages() {
@@ -80,6 +84,9 @@ async function getPreviousHourMessages() {
 //   console.log(`server listening on port ${port}`)
 // })
 
+// Script to run every hour at 0min0sec that will check previousHourMessages
+schedule.scheduleJob('0 0 * * * *', getPreviousHourMessages)
+
 /* EXPRESS STUFF (temporary) */
 
 const express = require('express')
@@ -96,5 +103,9 @@ express()
       data.error = e
     }
     res.render('pages/index.pug', data)
+  })
+  .post('/leaderboard', (req, res) => {
+    console.log('get leaderboard')
+    emojiMasterCommand()
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

@@ -109,7 +109,7 @@ express()
     try {
       const lastUpdate = await getLastUpdate()
       // await getMessageHistory(lastUpdate)
-      await getMessageHistory(lastUpdate - (60 * 42 * 1e3), Date.now()) // DEBUG: DEMO!
+      await getMessageHistory(lastUpdate - (60 * 42 * 1e3)) // DEBUG: DEMO!
       data.leaderboard = await getLeaderBoard(1000)
       // displayDatabase() // DEBUG
     } catch (e) {

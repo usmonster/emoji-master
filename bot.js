@@ -5,16 +5,17 @@ const url = process.env.SLACK_WEBHOOK_URL
 const webhook = new IncomingWebhook(url)
 
 getLeaderBoard(3).then((res) => {
-  let messageObj = getMessageObj(res)
-  console.log(messageObj);
+  console.log(res)
+  // let messageObj = getMessageObj(res)
+  // console.log(messageObj);
   
-  webhook.send(messageObj, (err, res) => {
-      if (err) {
-          console.log('Error:', err)
-      } else {
-          console.log('Message sent: ', res)
-      }
-  });
+  // webhook.send(messageObj, (err, res) => {
+  //     if (err) {
+  //         console.log('Error:', err)
+  //     } else {
+  //         console.log('Message sent: ', res)
+  //     }
+  // });
 })
 
 function getMessageObj(res) {

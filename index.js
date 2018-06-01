@@ -38,7 +38,7 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
           }
         })
       })
-    console.log(`userScoreMap: ${JSON.stringify(userScoreMap)}`)
+    // console.log(`userScoreMap: ${JSON.stringify(userScoreMap)}`)
 
     // DEBUG: remove this later, since we have redis now
     // Establish the (local, ephemeral) leaderboard
@@ -47,11 +47,11 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
       score,
       username: await getUsername(userId),
     })))
-  }).then((fakeLeaderboard) => {
-    fakeLeaderboard.forEach(({ userId, username }) => {
+  }).then((leaderboard) => {
+    leaderboard.forEach(({ userId, username }) => {
       updateUser(userId, username)
     })
-    return fakeLeaderboard
+    return leaderboard
   }).catch(console.error)
 }
 

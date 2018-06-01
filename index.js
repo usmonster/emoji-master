@@ -1,18 +1,21 @@
 #!/usr/bin/env node
-const schedule = require('node-schedule')
 const { WebClient } = require('@slack/client')
+const schedule = require('node-schedule')
 const {
   // displayDatabase, // DEBUG
+  getLastUpdate,
+  setLastUpdate,
   getLeaderBoard,
   updateUser,
   userEarnPoints,
+  clearDatabase,
 } = require('./lib/state')
 const { emojiMasterCommand } = require('./lib/bot')
 
 const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
 async function getUsername(id) {
-  return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.display_name)
+  return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.real_name)
 }
 
 async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
@@ -21,7 +24,8 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
     count: 1000,
     oldest: from,
     latest: to,
-  }).then((history) => {
+  }).then(async (history) => {
+    await setLastUpdate(Date.now() / 1000)
     // console.log('>>> message history:')
     // console.log(history)
     const userScoreMap = {} // simulate DB
@@ -101,7 +105,8 @@ express()
   .get('/', async (req, res) => {
     const data = {}
     try {
-      await getMessageHistory()
+      const lastUpdate = await getLastUpdate()
+      await getMessageHistory(lastUpdate)
       data.leaderboard = await getLeaderBoard(1000)
       // await getPreviousHourMessages()
       // displayDatabase() // DEBUG
@@ -113,5 +118,9 @@ express()
   .post('/leaderboard', async (req, res) => {
     await emojiMasterCommand()
     return res
+  })
+  .get('/clear', async (req, res) => {
+    await clearDatabase()
+    return res.send('Database successfully flushed')
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

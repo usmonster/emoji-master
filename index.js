@@ -108,7 +108,8 @@ express()
     const data = {}
     try {
       const lastUpdate = await getLastUpdate()
-      await getMessageHistory(lastUpdate)
+      // await getMessageHistory(lastUpdate)
+      await getMessageHistory(lastUpdate - (60 * 42 * 1e3), Date.now()) // DEBUG: DEMO!
       data.leaderboard = await getLeaderBoard(1000)
       // displayDatabase() // DEBUG
     } catch (e) {
@@ -121,6 +122,10 @@ express()
     await getMessageHistory()
     return res.send('Database set up done!')
   })
+  // .get('/leaderboard', async (req, res) => { // DEBUG
+  //   console.log(res)
+  //   return res.send(res.response_url)
+  // })
   .post('/leaderboard', async (req, res) => {
     await emojiMasterCommand()
     return res.send('Here is the leaderboard!')

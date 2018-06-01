@@ -25,7 +25,7 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
     oldest: from,
     latest: to,
   }).then(async (history) => {
-    await setLastUpdate(Date.now() / 1000)
+    await setLastUpdate((Date.now() / 1000) - 3600)
     // console.log('>>> message history:')
     // console.log(history)
     const userScoreMap = {} // simulate DB
@@ -116,8 +116,13 @@ express()
     res.render('pages/index.pug', data)
   })
   .post('/leaderboard', async (req, res) => {
+    await clearDatabase()
+    await getMessageHistory()
+    return res.send('Database set up done!')
+  })
+  .post('/setup', async (req, res) => {
     await emojiMasterCommand()
-    return res
+    return res.send('Here is the leaderboard!')
   })
   .get('/clear', async (req, res) => {
     await clearDatabase()

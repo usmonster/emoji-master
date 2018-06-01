@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { WebClient } = require('@slack/client')
-const { userEarnPoints, displayDatabase, updateUser } = require('./redis')
+const { userEarnPoints, displayDatabase, updateUser, getLeaderBoard } = require('./redis')
 const schedule = require('node-schedule')
 const { emojiMasterCommand } = require('./bot')
 
@@ -96,9 +96,10 @@ express()
   .get('/', async (req, res) => {
     const data = {}
     try {
-      data.leaderboard = await getMessageHistory()
+      await getMessageHistory()
+      data.leaderboard = await getLeaderBoard(1000)
       // await getPreviousHourMessages()
-      displayDatabase() // DEBUG
+      // displayDatabase() // DEBUG
     } catch (e) {
       data.error = e
     }

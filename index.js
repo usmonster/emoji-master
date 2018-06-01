@@ -18,16 +18,20 @@ async function getUsername(id) {
   return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.real_name)
 }
 
-async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
+const oneHour = 60 * 60 * 1e3 // in ms
+const maxMessages = 1e3
+async function getMessageHistory(from = 0, to = Date.now() - oneHour) {
   return slackClient.channels.history({
-    channel: 'C027VGR1H',
-    count: 1000,
-    oldest: from,
-    latest: to,
+    channel: 'C027VGR1H', // '#general'
+    count: maxMessages,
+    // Note: timestamps are in seconds
+    oldest: from / 1e3,
+    latest: to / 1e3,
   }).then(async (history) => {
-    await setLastUpdate((Date.now() / 1000) - 3600)
     // console.log('>>> message history:')
     // console.log(history)
+    await setLastUpdate(to)
+    // TODO: don't use this?
     const userScoreMap = {} // simulate DB
     history.messages
       .filter(message => 'reactions' in message)
@@ -64,11 +68,9 @@ async function getMessageHistory(from = 0, to = Date.now() / 1e3) {
   }).catch(console.error)
 }
 
-async function getPreviousHourMessages() {
-  // Note: times are in seconds
-  const oneHour = 60 * 60
-  const now = Date.now() / 1e3
-  return getMessageHistory(now - (oneHour * 2), now - oneHour)
+async function updateMessages() {
+  const lastUpdate = await getLastUpdate()
+  return getMessageHistory(lastUpdate)
 }
 
 /* SLACK STUFF */
@@ -94,9 +96,9 @@ async function getPreviousHourMessages() {
 // })
 
 // Script to run every hour at 0min0sec that will check previousHourMessages
-schedule.scheduleJob('0 0 * * * *', getPreviousHourMessages)
+schedule.scheduleJob('0 0 * * * *', updateMessages)
 
-/* EXPRESS STUFF (temporary) */
+/* EXPRESS STUFF */
 
 const express = require('express')
 
@@ -108,19 +110,18 @@ express()
       const lastUpdate = await getLastUpdate()
       await getMessageHistory(lastUpdate)
       data.leaderboard = await getLeaderBoard(1000)
-      // await getPreviousHourMessages()
       // displayDatabase() // DEBUG
     } catch (e) {
       data.error = e
     }
     res.render('pages/index.pug', data)
   })
-  .post('/leaderboard', async (req, res) => {
+  .get('/setup', async (req, res) => {
     await clearDatabase()
     await getMessageHistory()
     return res.send('Database set up done!')
   })
-  .post('/setup', async (req, res) => {
+  .post('/leaderboard', async (req, res) => {
     await emojiMasterCommand()
     return res.send('Here is the leaderboard!')
   })

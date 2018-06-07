@@ -15,7 +15,8 @@ const { emojiMasterCommand } = require('./lib/bot')
 const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
 async function getUsername(id) {
-  return slackClient.users.profile.get({ user: id }).then(({ profile }) => profile.real_name)
+  const { profile } = await slackClient.users.profile.get({ user: id })
+  return profile.real_name
 }
 
 const oneHour = 60 * 60 * 1e3 // in ms
@@ -120,12 +121,9 @@ express()
     await getMessageHistory()
     return res.send('Database set up done!')
   })
-  // .get('/leaderboard', async (req, res) => { // DEBUG
-  //   console.log(res)
-  //   return res.send(res.response_url)
-  // })
   .post('/leaderboard', async (req, res) => {
     await emojiMasterCommand()
+    // console.log(req.response_url) // DEBUG
     return res.send('Here is the leaderboard!')
   })
   .get('/clear', async (req, res) => {

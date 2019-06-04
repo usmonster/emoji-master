@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const express = require('express')
 const { WebClient } = require('@slack/web-api')
 const schedule = require('node-schedule')
 const {
@@ -100,9 +101,6 @@ async function updateMessages() {
 schedule.scheduleJob('0 0 * * * *', updateMessages)
 
 /* EXPRESS STUFF */
-
-const express = require('express')
-
 const PORT = process.env.PORT || 8080
 express()
   .get('/', async (req, res) => {

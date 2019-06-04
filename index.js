@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { WebClient } = require('@slack/client')
+const { WebClient } = require('@slack/web-api')
 const schedule = require('node-schedule')
 const {
   // displayDatabase, // DEBUG
@@ -76,9 +76,9 @@ async function updateMessages() {
 
 /* SLACK STUFF */
 // TODO: use listeners?
-// const { createSlackEventAdapter } = require('@slack/events-api')
+// const { createEventAdapter } = require('@slack/events-api')
 //
-// const slackEvents = createSlackEventAdapter(process.env.SLACK_TOKEN)
+// const slackEvents = createEventAdapter(process.env.SLACK_SIGNING_SECRET)
 // const port = process.env.PORT || 3000
 //
 // slackEvents.on('reaction_added', (event) => {

@@ -36,7 +36,7 @@ async function getMessageHistory(from = 0, to = Date.now() - oneHour) {
     // TODO: don't use this?
     const userScoreMap = {} // simulate DB
     history.messages
-      .filter(message => 'reactions' in message)
+      .filter((message) => 'reactions' in message)
       .forEach((message) => {
         let bestReactionCount = 0
         // TODO: use reduce

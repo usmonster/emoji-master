@@ -23,7 +23,7 @@ async function getUsername(id) {
 const oneHour = 60 * 60 * 1e3 // in ms
 const maxMessages = 1e3
 async function getMessageHistory(from = 0, to = Date.now() - oneHour) {
-  return slackClient.channels.history({
+  return slackClient.conversations.history({
     channel: 'C027VGR1H', // '#general'
     count: maxMessages,
     // Note: timestamps are in seconds

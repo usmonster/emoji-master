@@ -103,6 +103,7 @@ schedule.scheduleJob('0 0 * * * *', updateMessages)
 /* EXPRESS STUFF */
 const PORT = process.env.PORT || 8080
 express()
+  .use(express.urlencoded({ extended: false }))
   .get('/', async (req, res) => {
     const data = {}
     try {
@@ -120,13 +121,14 @@ express()
     await getMessageHistory()
     console.info('Database successfully initialized!')
   })
-  .post('/leaderboard', async (req, res) => {
+  .post('/leaderboard', async ({ body }, res) => {
     res.send('Fetching the leaderboard...')
     try {
-      await postLeaderboard(req.response_url)
-      console.info('Message sent:', res)
+      await postLeaderboard(body.response_url)
+      console.info(`Leaderboard sent to ${body.user_name}`)
     } catch (e) {
       console.error('Error posting leaderboard:', e)
+      console.debug('Failed command with payload:', body)
     }
   })
   .get('/clear', async (req, res) => {

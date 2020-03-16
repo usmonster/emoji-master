@@ -11,7 +11,7 @@ const {
   userEarnPoints,
   clearDatabase,
 } = require('./lib/state')
-const { emojiMasterCommand } = require('./lib/bot')
+const { postLeaderboard } = require('./lib/bot')
 
 const slackClient = new WebClient(process.env.SLACK_TOKEN)
 
@@ -115,17 +115,23 @@ express()
     res.render('pages/index.pug', data)
   })
   .get('/setup', async (req, res) => {
+    res.send('Initializing database...')
     await clearDatabase()
     await getMessageHistory()
-    return res.send('Database set up done!')
+    console.info('Database successfully initialized!')
   })
   .post('/leaderboard', async (req, res) => {
-    await emojiMasterCommand()
-    // console.log(req.response_url) // DEBUG
-    return res.send('Here is the leaderboard!')
+    res.send('Fetching the leaderboard...')
+    try {
+      await postLeaderboard(req.response_url)
+      console.info('Message sent:', res)
+    } catch (e) {
+      console.error('Error posting leaderboard:', e)
+    }
   })
   .get('/clear', async (req, res) => {
+    res.send('Clearing the database...')
     await clearDatabase()
-    return res.send('Database successfully flushed')
+    console.info('Database successfully cleared!')
   })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))

@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/usmonster/emoji-master#readme",
   "engines": {
-    "npm": "7.x"
+    "node": "18.x"
   },
   "dependencies": {
     "@slack/web-api": "^6.1.0",

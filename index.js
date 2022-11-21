@@ -136,4 +136,12 @@ express()
     await clearDatabase()
     console.info('Database successfully cleared!')
   })
+  .get('/health', async (req, res) => {
+    res.status(200).send({
+      date: Date.now(),
+      message: 'ok',
+      uptime: process.uptime(),
+    })
+    console.debug('Health check sent!')
+  })
   .listen(PORT, () => console.log(`Listening on port ${PORT}...`))
